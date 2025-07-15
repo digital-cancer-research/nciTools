@@ -27,5 +27,6 @@ saveThesaurus = function(thesaurus_processed, db_connection) {
   DBI::dbDisconnect(db_connection)
 
   ## return path to populated db
-  return(db_path)
+  # return(db_path)
+  return(NULL)
 }

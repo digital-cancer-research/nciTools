@@ -16,13 +16,13 @@
 createDictionaries = function(thesaurus) {
 
   ## cancer type dict
-  cancer_dict = createDictionary(source_data = thesaurus, semantic_types = 'Neoplastic Process')
+  cancer_dict = nciTools::createDictionary(source_data = thesaurus, semantic_types = 'Neoplastic Process')
 
-  drug_dict = createDictionary(source_data = thesaurus, semantic_types = c("Pharmacologic Substance", "Biologically Active Substance", "Clinical Drug", "Steroid", "Immunologic Factor", "Therapeutic or Preventive Procedure"))
+  drug_dict = nciTools::createDictionary(source_data = thesaurus, semantic_types = c("Pharmacologic Substance", "Biologically Active Substance", "Clinical Drug", "Steroid", "Immunologic Factor", "Therapeutic or Preventive Procedure"))
 
-  gene_dict = createDictionary(source_data = thesaurus, semantic_types = 'Gene or Genome')
+  gene_dict = nciTools::createDictionary(source_data = thesaurus, semantic_types = 'Gene or Genome')
 
-  alteration_dict = createDictionary(source_data = thesaurus, semantic_types = 'Cell or Molecular Dysfunction')
+  alteration_dict = nciTools::createDictionary(source_data = thesaurus, semantic_types = 'Cell or Molecular Dysfunction')
 
 
   return(list(

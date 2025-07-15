@@ -2,12 +2,12 @@
 
 export(createDictionaries)
 export(createDictionary)
+export(downloadThesaurus)
 export(expandAlterations)
 export(getAncestors)
 export(getCodes)
 export(getDescendants)
 export(getNCIt_relationships)
-export(loadThesaurus)
 export(processThesaurus)
 export(saveThesaurus)
 import(httr)

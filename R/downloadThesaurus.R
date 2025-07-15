@@ -7,7 +7,7 @@
 #' @details
 #' Thesaurus downloaded from `https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/Thesaurus.FLAT.zip` - this should always be the latest version.\cr
 #' @export
-loadThesaurus = function() {
+downloadThesaurus = function() {
   ## latest version should always be at this url...
   NCItURL <- "https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/Thesaurus.FLAT.zip"
 
