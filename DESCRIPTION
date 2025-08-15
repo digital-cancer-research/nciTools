@@ -1,9 +1,9 @@
 Package: nciTools
-Title: What the Package Does (One Line, Title Case)
+Title: Download and Process National Cancer Institute Thesaurus
 Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Description: Functions to download, prune and save NCI thesaurus. Plus additional functions for creating quanteda dictionaries and traversing ontology. 
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
