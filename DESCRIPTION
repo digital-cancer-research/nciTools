@@ -2,10 +2,9 @@ Package: nciTools
 Title: Download and Process National Cancer Institute Thesaurus
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+    person("Paul", "O'Regan", , "paul.oregan@cruk.manchester.ac.uk", role = c("aut", "cre"))
 Description: Functions to download, prune and save NCI thesaurus. Plus additional functions for creating quanteda dictionaries and traversing ontology. 
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
