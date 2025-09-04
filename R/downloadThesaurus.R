@@ -7,18 +7,18 @@
 #' @details
 #' Thesaurus downloaded from `https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/Thesaurus.FLAT.zip` - this should always be the latest version.\cr
 #' @export
-downloadThesaurus = function() {
+downloadThesaurus = function(exdir = "data/raw") {
   ## latest version should always be at this url...
   NCItURL <- "https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/Thesaurus.FLAT.zip"
 
   ## download to data/raw subfolder
-  destFlatFilename <- "data/raw/NCIt_FLAT.zip"
+  destFlatFilename <- paste(exdir, "NCIt_FLAT.zip", sep = "/")
 
   ## try to download
   tryCatch(
     expr = {
       utils::download.file(url=NCItURL,destfile = destFlatFilename)
-      utils::unzip(zipfile = destFlatFilename, exdir = "data/raw",)
+      utils::unzip(zipfile = destFlatFilename, exdir = exdir,)
       ## clean up, remove files
       file.remove(destFlatFilename)
     }, error = function(e) {
@@ -27,6 +27,7 @@ downloadThesaurus = function() {
   )
 
   ## output file targets create files and return their paths
-  return("data/raw/Thesaurus.txt")
+  ex_filepath = paste(exdir, "Thesaurus.txt", sep = "/")
+  return(ex_filepath)
 
 }
