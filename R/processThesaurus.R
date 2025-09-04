@@ -30,8 +30,8 @@
 #' - New synonyms are added where appropriate.
 #' - Parent-child relationships and synonyms are extracted into separate tables for convenient reuse in the pipeline.
 #' @export
-processThesaurus = function(thesaurus_file) {
-  NCIt <- utils::read.table(thesaurus_file,header = FALSE, sep = "\t", comment.char = "", fill = TRUE, stringsAsFactors = FALSE, quote = "")
+processThesaurus = function(NCIt) {
+
 
   # names(NCIt) <- c("code", "concept_IRI", "parents", "synonyms", "definition", "display_name", "concept_status", "semantic_type", "concept_in_subset")
 
