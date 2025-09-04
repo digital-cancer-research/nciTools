@@ -16,7 +16,7 @@
 #' @param db_connection connection to a database that includes the `thesaurus_flat` and `parents` tables
 #' @return A character vector of descendant concept codes.
 #'
-#' @seealso [sqldf::sqldf()], [dplyr::pull()], [base::unique()]
+#' @seealso [dplyr::pull()], [base::unique()]
 #' @export
 getDescendants <- function(codes, db_connection) {
   formatted_codes = sprintf('"%s"', codes) |>
