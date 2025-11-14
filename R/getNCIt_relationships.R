@@ -63,6 +63,7 @@ getNCIt_relationships <- function(code, include_what) {
     dataframe = result |>
       tibble::tibble() |>
       tidyr::unnest_wider(result) |>
+      dplyr::filter(relatedCode != 'C36347') |>          ## NCIt erroneously includes many Gene_Mutant_Encodes_Gene_Product_Sequence_Variation relationships to t(8;14)(q24;q11)
       as.data.frame()
 
     return(dataframe)
