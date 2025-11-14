@@ -11,16 +11,17 @@
 #' Expand a set of NCI thesaurus codes related to cell/molecular dysfunctions to include all protein and DNA terms, and all of their ancestors.\cr
 #' For example, `C98365` (KRAS G12C, a gene product variation) is expanded to include the respective gene variation(s) (e.g. `C98366`), plus all their ancestors (e.g. `C135715` KRAS exon 2 mutation, and `C98362` KRAS Protein Variant etc)
 #' @param codes One or more codes for NCI thesaurus entities of semantic type `Cell or Molecular Dysfunction`.
+#' @param db_connection connection to database that includes thesaurus used to get ancestors.
 #' @returns The expanded set of codes
 #' @details Relationships described by `Gene_Product_Sequence_Variation_Encoded_By_Gene_Mutant` and `Gene_Mutant_Encodes_Gene_Product_Sequence_Variation` are added to the specified codes, and then all codes are expanded to include all ancestor terms
 #' @seealso \code{\link{getNCIt_relationships}} get relationships from NCI thesaurus API.
 #' @seealso \code{\link{getAncestors}} get higher level terms
 #' @export
-expandAlterations <- function(codes) {
+expandAlterations <- function(codes, db_connection) {
   # ensure that both DNA and protein codes are included
   alteration_codes = codes
   for(i in 1:length(alteration_codes)) {
-    relations = getNCIt_relationships(alteration_codes[i], include_what = 'inverseRoles')
+    relations = nciTools::getNCIt_relationships(alteration_codes[i], include_what = 'inverseRoles')
     if(!is.null(relations)) {
       relation_codes = relations |>
         dplyr::filter(type %in% c('Gene_Product_Sequence_Variation_Encoded_By_Gene_Mutant', 'Gene_Mutant_Encodes_Gene_Product_Sequence_Variation')) |>
@@ -31,7 +32,7 @@ expandAlterations <- function(codes) {
   }
 
   ## get ancestors
-  ancestors = getAncestors(alteration_codes) |>
+  ancestors = nciTools::getAncestors(codes = alteration_codes, db_connection = db_connection) |>
     dplyr::pull(code) |>
     unique()
 
