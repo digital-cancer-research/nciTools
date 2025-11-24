@@ -139,10 +139,13 @@ processThesaurus = function(NCIt) {
     ) |> ## delete 'TP53' as a synonym of TP53 gene mutation
     dplyr::mutate(
       synonyms = dplyr::if_else(condition = code == "C71428", true = purrr::map(synonyms, ~ .x[!(.x %in% c('triple-negative breast cancer', 'TNBC'))]), false = synonyms)
-    ) |>     ## delete this as a synonym of TNBC finding (to avoid clash with TNBC as cancer type
+    ) |>     ## delete this as a synonym of TNBC finding (to avoid clash with TNBC as cancer type)
     dplyr::mutate(
       synonyms = dplyr::if_else(condition = code == "C118809", true = purrr::map(synonyms, ~ .x[.x != "Breast Cancer"]), false = synonyms)
     ) |> ## delete 'Breast Cancer' as a synonym of Childhood Breast Carcinoma
+    dplyr::mutate(
+      synonyms = dplyr::if_else(condition = code == "C96271", true = purrr::map(synonyms, ~ .x[.x != "PIK3CA"]), false = synonyms)
+    ) |> ## delete 'PIK3CA' as a synonym of PIK3CA Gene Mutation
     dplyr::mutate(
       synonyms = dplyr::if_else(condition = code == "C116397", true = purrr::map(synonyms, ~ .x[.x != "Exon 12"]), false = synonyms)
     ) |> ## delete 'Exon 12' as a synonym of PDGFRA Exon 12 Mutation
