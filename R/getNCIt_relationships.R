@@ -13,7 +13,7 @@
 #'
 #' @param code A character string representing the NCIt code (concept ID) for which to retrieve relationships.
 #' @param include_what A character string indicating the type of relationships to include. Valid options are:
-#'   `roles`, `inverseRoles`, `associations`, or `inverseAssociations`.
+#'   `roles`, `inverseRoles`, `associations`, or `inverseAssociations` `minimal`, `summary`, `full`, `associations`, `children`, `definitions`, `disjointWith`, `history`, `inverseAssociations`, `inverseRoles`, `maps`, `parents`, `properties`, `roles`, `synonyms`
 #'   This determines which relationship information will be returned for the specified code.
 #'
 #' @return A data frame containing the specified relationships for the NCIt code. If no relationships are found, it returns `NULL`.
@@ -23,7 +23,7 @@
 #' based on the `include_what` parameter. The result is parsed into a tibble (data frame), with each relationship type presented
 #' in separate columns.
 #'
-#' The following values are valid for `include_what`:
+#' Examples for `include_what`:
 #'
 #' - `roles`: Returns roles associated with the concept.
 #' - `inverseRoles`: Returns inverse roles related to the concept.
@@ -35,6 +35,7 @@
 #' @import tidyr
 #'
 #' @seealso \url{https://evsexplore.semantics.cancer.gov/evsexplore/evsapi}
+#' @seealso \url {https://github.com/NCIEVS/evsrestapi-client-SDK/blob/main/doc/INCLUDE.md}
 #' @export
 getNCIt_relationships <- function(code, include_what) {
   ## set base parameters for querying NCI thesaurus API endpoint

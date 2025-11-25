@@ -15,45 +15,23 @@
 #' Descendants are identified using a parent-child relationship table (`NCIt_parents`).\cr
 #' The results are returned as a unique character vector of descendant codes.
 #'
-#' Internally, the function:
-#' - Quotes and formats the input codes for SQL `IN` syntax\cr
-#' - Uses a recursive CTE (Common Table Expression) to traverse downward through the concept hierarchy\cr
-#' - Returns a de-duplicated vector of descendant concept codes
+#' Internally, the function uses a recursive CTE (Common Table Expression) to traverse downward through the concept hierarchy\cr
 #'
 #' @param codes A character vector of NCI Thesaurus concept codes whose descendants should be retrieved.
-#' @param db_connection connection to a database that includes the `thesaurus_flat` and `parents` tables
-#' @return A character vector of descendant concept codes.
+#' @param parents_df a dataframe with columns `code` and `parents` as a source of parent-child relationships
+#' @return A dataframe with descendant codes and distance (number of hops from source codes).
 #'
 #' @seealso [dplyr::pull()], [base::unique()]
 #' @export
-getDescendants <- function(codes, db_connection) {
-  # formatted_codes = sprintf('"%s"', codes) |>
-  #   toString()
-  #
-  # query <- 'WITH RECURSIVE children AS (
-  #   -- Base Case: Start with given parent codes
-  #   SELECT code AS c, 0 AS distance
-  #   FROM parents
-  #   WHERE code IN (%s)
-  #
-  #   UNION ALL
-  #
-  #   -- Recursive Case: Find children of current level
-  #   SELECT p.code, ch.distance + 1
-  #   FROM children ch
-  #   JOIN parents p ON ch.c = p.parents  -- Link child (code) to parent (parents)
-  # )
-  # SELECT DISTINCT tf.code, tf.PT, ch.distance
-  # FROM children ch
-  # LEFT JOIN thesaurus_flat tf ON ch.c = tf.code
-  # ORDER BY ch.distance;' |>
-  #   sprintf( formatted_codes)
-  #
-  # descendants = DBI::dbGetQuery(db_connection, statement = query)
+getDescendants_df <- function(codes, parents_df) {
+  temp_conn = DBI::dbConnect(RSQLite::SQLite())
+
+  # Write table into temp DB
+  dbWriteTable(temp_conn, "parents", parents_df, overwrite = TRUE)
 
   ## parameterised query
   query = 'WITH RECURSIVE children AS (
-        SELECT code AS c, 0 AS distance
+        SELECT code , 0 AS distance
         FROM parents
         WHERE code IN ($1)
 
@@ -61,14 +39,13 @@ getDescendants <- function(codes, db_connection) {
 
         SELECT p.code, ch.distance + 1
         FROM children ch
-        JOIN parents p ON ch.c = p.parents
+        JOIN parents p ON ch.code = p.parents
     )
-    SELECT DISTINCT tf.code, tf.PT, ch.distance
+    SELECT DISTINCT code, distance
     FROM children ch
-    LEFT JOIN thesaurus_flat tf ON ch.c = tf.code
     ORDER BY ch.distance;'
 
-  descendants = DBI::dbGetQuery(conn = db_connection, statement = query, params = list(codes))
+  descendants = DBI::dbGetQuery(conn = temp_conn, statement = query, params = list(codes))
 
   return(descendants)
 }
