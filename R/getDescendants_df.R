@@ -27,7 +27,7 @@ getDescendants_df <- function(codes, parents_df) {
   temp_conn = DBI::dbConnect(RSQLite::SQLite())
 
   # Write table into temp DB
-  dbWriteTable(temp_conn, "parents", parents_df, overwrite = TRUE)
+  DBI::dbWriteTable(temp_conn, "parents", parents_df, overwrite = TRUE)
 
   ## parameterised query
   query = 'WITH RECURSIVE children AS (
