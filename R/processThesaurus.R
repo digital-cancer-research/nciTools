@@ -170,6 +170,9 @@ processThesaurus = function(NCIt) {
     dplyr::mutate(
       synonyms = dplyr::if_else(condition = code == "C8101", true = purrr::map(synonyms, ~ .x[.x != "Solid Tumor"]), false = synonyms)
     ) |> ## delete 'Solid tumor' as a synonym of Adult Solid Neoplasm
+    dplyr::mutate(
+      synonyms = dplyr::if_else(condition = code == "C40459", true = purrr::map(synonyms, ~ .x[.x != "ATM"]), false = synonyms)
+    ) |> ## delete 'ATM' as a synonym of ATM Gene Mutation
     unique()
 
 
