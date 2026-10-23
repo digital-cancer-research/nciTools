@@ -153,6 +153,9 @@ processThesaurus = function(NCIt) {
       synonyms = dplyr::if_else(condition = code == "C116397", true = purrr::map(synonyms, ~ .x[.x != "Exon 12"]), false = synonyms)
     ) |> ## delete 'Exon 12' as a synonym of PDGFRA Exon 12 Mutation
     dplyr::mutate(
+      synonyms = dplyr::if_else(condition = code == "C116399", true = purrr::map(synonyms, ~ .x[.x != "Exon 18"]), false = synonyms)
+    ) |> ## delete 'Exon 18' as a synonym of PDGFRA Exon 18 Mutation
+    dplyr::mutate(
       synonyms = dplyr::if_else(condition = code == "C19635", true = purrr::map(synonyms, ~ .x[.x != "BRCA1"]), false = synonyms)
     ) |> ## delete 'BRCA1' as a synonym of BRCA1 Gene Mutation
     dplyr::mutate(
