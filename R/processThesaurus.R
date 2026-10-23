@@ -120,7 +120,7 @@ processThesaurus = function(NCIt) {
     dplyr::filter(code %in% generic_entities) |>
     dplyr::select(code, PT)
 
-  generic_synonyms <- c("Positive", "POSITIVE", "Yes", "Negative", "NEGATIVE", "Normal", 'Amplified')
+  generic_synonyms <- c("Positive", "POSITIVE", "Yes", "Negative", "NEGATIVE", "Normal", 'Amplified', 'Exon 9', 'Exon 11', 'Exon 14', 'Exon 18', 'Exon 20 Insertion', 'Mutation', 'Gene Mutation', 'Deletion', 'Gene Deletion', 'Amplification', 'Gene Amplification', 'Rearrangement', 'Gene Rearrangement', 'Fusion', 'Expression', 'Overexpression', 'Underexpression', 'Loss', 'LOH', 'Duplication', 'Internal Duplication', 'Frameshift', 'Splice Site')
 
   ## preview what will be removed
   NCIt |>
@@ -155,6 +155,9 @@ processThesaurus = function(NCIt) {
     dplyr::mutate(
       synonyms = dplyr::if_else(condition = code == "C116399", true = purrr::map(synonyms, ~ .x[.x != "Exon 18"]), false = synonyms)
     ) |> ## delete 'Exon 18' as a synonym of PDGFRA Exon 18 Mutation
+    dplyr::mutate(
+      synonyms = dplyr::if_else(condition = code == "C122768", true = purrr::map(synonyms, ~ .x[.x != "Exon 14"]), false = synonyms)
+    ) |> ## delete 'Exon 14' as a synonym of KIT Exon 14 Mutation
     dplyr::mutate(
       synonyms = dplyr::if_else(condition = code == "C19635", true = purrr::map(synonyms, ~ .x[.x != "BRCA1"]), false = synonyms)
     ) |> ## delete 'BRCA1' as a synonym of BRCA1 Gene Mutation
