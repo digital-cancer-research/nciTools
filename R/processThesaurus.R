@@ -120,7 +120,7 @@ processThesaurus = function(NCIt) {
     dplyr::filter(code %in% generic_entities) |>
     dplyr::select(code, PT)
 
-  generic_synonyms <- c("Positive", "POSITIVE", "Yes", "Negative", "NEGATIVE", "Normal", 'Amplified', 'Exon 9', 'Exon 11', 'Exon 14', 'Exon 18', 'Exon 20 Insertion', 'Mutation', 'Gene Mutation', 'Deletion', 'Gene Deletion', 'gene deletion', 'Amplification', 'Gene Amplification', 'Rearrangement', 'Gene Rearrangement', 'Fusion', 'Expression', 'Overexpression', 'Underexpression', 'Loss', 'LOH', 'Duplication', 'Internal Duplication', 'Frameshift', 'Splice Site')
+  generic_synonyms <- c("Positive", "POSITIVE", "Yes", "Negative", "NEGATIVE", "Normal", 'Amplified', 'Exon 9', 'Exon 11', 'Exon 14', 'Exon 18', 'Exon 20 Insertion', 'Insertion', 'Mutation', 'Gene Mutation', 'Deletion', 'Gene Deletion', 'gene deletion', 'Amplification', 'Gene Amplification', 'Rearrangement', 'Gene Rearrangement', 'Fusion', 'Expression', 'Overexpression', 'Underexpression', 'Loss', 'LOH', 'Duplication', 'Internal Duplication', 'Frameshift', 'Splice Site')
 
   ## preview what will be removed
   NCIt |>
