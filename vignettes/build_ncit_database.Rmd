@@ -1,0 +1,107 @@
+---
+title: "Building a local NCI Thesaurus database"
+output: html_document
+date: "2026-11-22"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setup
+
+Building the local NCIt database requires Python and the Python
+`rdflib` package. R communicates with Python using `reticulate`.
+
+Check that Python is available:
+
+```{r python-check, eval=TRUE}
+reticulate::py_config()
+```
+
+Check that `rdflib` is available:
+
+```{r rdflib-check, eval=TRUE}
+reticulate::py_module_available("rdflib")
+```
+
+If required, `rdflib` can be installed into the Python environment
+used by `reticulate`:
+
+```{r rdflib-install, eval=TRUE}
+reticulate::py_install("rdflib")
+```
+
+
+```{r download, eval=TRUE}
+zip_file <- downloadNCIt_OWL_inferred()
+
+owl_file <- extractNCIt_OWL_inferred(
+  zip_file
+)
+```
+
+```{r parse, eval=FALSE}
+reticulate::source_python(
+  system.file(
+    "python",
+    "parse_ncit_owl.py",
+    package = "nciTools"
+  )
+)
+
+g <- parse_ncit_owl(
+  owl_file
+)
+```
+
+```{r define desired path to database}
+
+db_file <- file.path(
+  dirname(owl_file),
+  "NCIt.sqlite"
+)
+
+```
+
+```{r database, eval=FALSE}
+reticulate::source_python(
+  system.file(
+    "python",
+    "create_db_from_graph.py",
+    package = "nciTools"
+  )
+)
+
+
+
+create_db_from_graph(
+  g,
+  db_file
+)
+```
+
+
+
+```{r test queries against DB}
+
+NCIt_sqlite_con = DBI::dbConnect(drv=RSQLite::SQLite(), db_file)
+
+## concepts
+DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM concept LIMIT 6')
+
+## relationships
+DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship LIMIT 6')
+
+## relationship types
+DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship_type LIMIT 6') 
+
+## relationship labels
+DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship_type') |> 
+  dplyr::pull(label) |> 
+  unique()
+
+
+```
+
+
