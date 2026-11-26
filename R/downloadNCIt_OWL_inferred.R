@@ -1,4 +1,4 @@
-' Download the NCI Thesaurus in inferred OWL format
+#' Download the NCI Thesaurus in inferred OWL format
 #'
 #' Downloads the current inferred OWL distribution of the NCI Thesaurus
 #' (NCIt) from the NCI Enterprise Vocabulary Services (EVS).
@@ -31,10 +31,10 @@ downloadNCIt_OWL_inferred <- function(
     ),
     overwrite = FALSE
 ) {
-  
+
   # Official NCI EVS source for the current inferred NCIt OWL release
   url <- "https://evs.nci.nih.gov/ftp1/NCI_Thesaurus/ThesaurusInf.OWL.zip"
-  
+
   # Check arguments
   stopifnot(
     is.character(path),
@@ -44,7 +44,7 @@ downloadNCIt_OWL_inferred <- function(
     length(overwrite) == 1L,
     !is.na(overwrite)
   )
-  
+
   # Create cache directory if it does not already exist
   if (!dir.exists(path)) {
     dir.create(
@@ -53,42 +53,42 @@ downloadNCIt_OWL_inferred <- function(
       showWarnings = FALSE
     )
   }
-  
+
   # Determine destination file
   destfile <- file.path(
     path,
     basename(url)
   )
-  
+
   # Use existing download unless explicitly asked to replace it
   if (file.exists(destfile) && !overwrite) {
     message(
       "NCI Thesaurus OWL file already exists: ",
       destfile
     )
-    
+
     return(invisible(destfile))
   }
-  
+
   # Download NCIt
   message("Downloading NCI Thesaurus inferred OWL...")
-  
+
   utils::download.file(
     url = url,
     destfile = destfile,
     mode = "wb",
     quiet = FALSE
   )
-  
+
   # Basic validation of downloaded file
   if (!file.exists(destfile) || file.size(destfile) == 0) {
     stop("NCI Thesaurus OWL download failed.")
   }
-  
+
   message(
     "NCI Thesaurus OWL downloaded to: ",
     destfile
   )
-  
+
   invisible(destfile)
 }

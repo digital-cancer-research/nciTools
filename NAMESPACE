@@ -2,8 +2,10 @@
 
 export(createDictionaries)
 export(createDictionary)
+export(downloadNCIt_OWL_inferred)
 export(downloadThesaurus)
 export(expandAlterations)
+export(extractNCIt_OWL_inferred)
 export(getAncestors)
 export(getCodes)
 export(getDescendants)

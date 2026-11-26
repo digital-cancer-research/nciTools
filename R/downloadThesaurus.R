@@ -61,6 +61,8 @@ downloadThesaurus = function() {
   # ex_filepath = paste(exdir, "Thesaurus.txt", sep = "/")
   # return(ex_filepath)
 
+  names(NCIt_raw)[1:8] <- c("code", "concept_IRI", "parents", "synonyms", "definition", "display_name", "concept_status", "semantic_type")
+
   return(NCIt_raw)
 
 }

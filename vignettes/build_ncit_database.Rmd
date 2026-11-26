@@ -34,10 +34,10 @@ reticulate::py_install("rdflib")
 ```
 
 
-```{r download, eval=TRUE}
-zip_file <- downloadNCIt_OWL_inferred()
+```{r download OWL , eval=TRUE}
+zip_file <- nciTools::downloadNCIt_OWL_inferred()
 
-owl_file <- extractNCIt_OWL_inferred(zip_file)
+owl_file <- nciTools::extractNCIt_OWL_inferred(zip_file)
 
 ```
 
