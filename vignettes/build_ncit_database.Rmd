@@ -33,15 +33,158 @@ used by `reticulate`:
 reticulate::py_install("rdflib")
 ```
 
+## **Download flat NCI thesaurus**  
+  
+```{r download flat NCIt}
 
-```{r download OWL , eval=TRUE}
+NCIt_flat = nciTools::downloadThesaurus()
+
+```
+
+## **Normalise thesaurus**  
+  
+```{r normalise NCI thesaurus}
+
+NCIt_entities = NCIt_flat |> 
+  dplyr::mutate(PT = gsub("\\|.*", "", synonyms)) |>  ##  use the first synonym as PT
+  dplyr::select(code, PT, definition, concept_status) |> 
+  unique()
+
+NCIt_synonyms = NCIt_flat |> 
+  dplyr::mutate(synonyms = strsplit(synonyms, split = '\\|')) |>
+  tidyr::unnest(cols = 'synonyms') |> 
+  as.data.frame() |> 
+  dplyr::select(code, synonyms) |> 
+  unique()
+
+NCIt_parents = NCIt_flat |> 
+  dplyr::mutate(parents = strsplit(parents, split = '\\|')) |>
+  tidyr::unnest(cols = 'parents') |> 
+  as.data.frame() |> 
+  dplyr::select(code, parents) |> 
+  unique()
+
+NCIt_semantic_types = NCIt_flat |> 
+  dplyr::mutate(semantic_type = strsplit(semantic_type, split = '\\|')) |>
+  tidyr::unnest(cols = 'semantic_type') |> 
+  as.data.frame() |> 
+  dplyr::select(code, semantic_type) |> 
+  unique()
+
+```
+
+## **Prune flat NCI thesaurus**  
+
+```{r prune entities}
+
+NCIt_entities = NCIt_entities |> 
+  dplyr::filter(!grepl(pattern = 'Obsolete_Concept|Retired_Concept', concept_status) ) |> 
+  dplyr::select(- concept_status)
+
+generic_entities = c("Expression Negative", "Variant Exon", "Frameshift Mutation", 
+                     "Gene Amplification Positive", "Elevated Expression", "Decreased Expression", 
+                     "Gain of Function Gene Mutation", "Loss of Heterozygosity", 
+                     "Somatic Variation", "Gene Mutation", "Exon Skipping Mutation", 
+                     "Copy Number Gain", "Insertion Mutation", "Deletion Mutation", 
+                     "Splice-Site Mutation", "Gene Fusion", "Chromosomal Translocation", 
+                     "Nervous System Finding", "Molecular Genetic Variation", 
+                     "Chromosomal Rearrangement", "Mutation Abnormality", 
+                     "Gene Amplification Abnormality", "Gene Fusion Abnormality", 
+                     "Protein Truncation Abnormality", "Deleterious Mutation", "Chromosomal Deletion", 
+                     "Gene Variant")
+
+
+NCIt_entities = NCIt_entities |> 
+  dplyr::filter(!PT %in% generic_entities)
+
+
+```
+
+  
+```{r prune synonyms}
+
+generic_synonyms <- c("Positive", "POSITIVE", "Yes", 
+                      "Negative", "NEGATIVE", "Normal", 
+                      'Amplified', 'Exon 9', 'Exon 11', 
+                      'Exon 14', 'Exon 18', 'Exon 20 Insertion', 
+                      'Insertion', 'Mutation', 'Gene Mutation', 
+                      'Deletion', 'Gene Deletion', 'gene deletion', 
+                      'Amplification', 'Gene Amplification', 'Rearrangement', 
+                      'Gene Rearrangement', 'Fusion', 'Expression', 
+                      'Overexpression', 'Underexpression', 'Loss', 
+                      'LOH', 'Duplication', 'Internal Duplication', 
+                      'Frameshift', 'Splice Site')
+
+
+NCIt_synonyms = NCIt_synonyms |> 
+  dplyr::filter(! synonyms %in% generic_synonyms) |> 
+  dplyr::filter(! stringr::str_detect(synonyms, "\\(|\\)")) ## omit any synonyms containing parentheses, as these cause issues with later use as dictionary
+
+```
+
+
+
+```{r prune specific entity synonym}
+
+## prune inappropriate synonyms for given entities
+NCIt_synonyms = NCIt_synonyms |> 
+  dplyr::filter(! (code == "C118396" & synonyms == "TP53")) |>    ## TP53 gene mutation
+  dplyr::filter(! (code == "C71428" & synonyms %in% c("triple-negative breast cancer", "TNBC"))) |>    ## TNBC finding (to avoid clash with TNBC as cancer type)
+  dplyr::filter(! (code == "C118809" & synonyms == 'Breast Cancer')) |>    ## Childhood Breast Carcinoma 
+  dplyr::filter(! (code == "C96271" & synonyms == 'PIK3CA')) |>    ## PIK3CA Gene Mutation 
+  dplyr::filter(! (code == "C104668" & synonyms == 'Exon 11')) |>    ## KIT Exon 11 Mutation 
+  dplyr::filter(! (code == "C116397" & synonyms == 'Exon 12')) |>    ## PDGFRA Exon 12 Mutation 
+  dplyr::filter(! (code == "C116399" & synonyms == 'Exon 18')) |>    ## PDGFRA Exon 18 Mutation 
+  dplyr::filter(! (code == "C122768" & synonyms == 'Exon 14')) |>    ## KIT Exon 14 Mutation 
+  dplyr::filter(! (code == "C19635" & synonyms == 'BRCA1')) |>    ## BRCA1 Gene Mutation
+  dplyr::filter(! (code == "C2194" & synonyms == 'sorafenib')) |>    ## Sorafenib tosylate
+  dplyr::filter(! (code == "C9107" & synonyms == 'Solid Tumor')) |>    ## Childhood Solid Neoplasm
+  dplyr::filter(! (code == "C8101" & synonyms == 'Solid Tumor')) |>    ## Adult Solid Neoplasm
+  dplyr::filter(! (code == "C40459" & synonyms == 'ATM'))   ## ATM Gene Mutation
+
+```
+
+
+
+
+```{r add new synonyms}
+
+NCIt_synonyms = NCIt_synonyms |> 
+  dplyr::add_row(code = 'C177785', synonyms = 'RAS Q61X') |>  ## 'RAS Q61X' as a synonym of C177785 Activating RAS Q61X
+  unique()
+
+```
+
+
+
+```{r add new parent child relationships}
+
+## create new relationships where C9292 (Solid Neoplasm) is a parent of all children of C3263 Neoplasm By Site, except C35813 Hematopoietic and Lymphatic System Neoplasm
+new_solid_neoplasm_children = NCIt_parents |> 
+  dplyr::filter(parents == 'C3263') |> 
+  dplyr::filter(! code %in% c('C35813')) |> 
+  dplyr::mutate(parents = 'C9292')    
+
+NCIt_parents = NCIt_parents |> 
+  rbind(new_solid_neoplasm_children) |> 
+  unique()
+
+
+```
+
+
+## **Download NCI thesaurus, OWL format (inferred)**  
+  
+```{r download OWL file, eval=TRUE}
 zip_file <- nciTools::downloadNCIt_OWL_inferred()
 
 owl_file <- nciTools::extractNCIt_OWL_inferred(zip_file)
 
 ```
 
-```{r parse, eval=TRUE}
+## **Parse OWL file**  
+  
+```{r parse owl file, eval=TRUE}
 reticulate::source_python(
   system.file("python", "parse_ncit_owl.py", package = "nciTools")
 )
@@ -49,47 +192,157 @@ reticulate::source_python(
 g <- parse_ncit_owl(owl_file)
 ```
 
-```{r define desired path to database}
+```{r extract relationships from owl file}
+## parent-child relationships are not included - these will be sourced from NCIt_parents
 
-db_file <- file.path(dirname(owl_file), "NCIt.sqlite")
+reticulate::source_python(
+  system.file("python", "extract_dataframes_from_NCIt_graph.py", package = "nciTools")
+)
+
+NCIt_relationship_types <- get_relationship_types(g)
+
+NCIt_relationship_types <- do.call(
+    rbind,
+    lapply(NCIt_relationship_types, as.data.frame)
+)
+
+NCIt_relationships <- get_relationships(g)
+
+NCIt_relationships <- as.data.frame(
+    do.call(rbind, NCIt_relationships)
+)
+
+NCIt_relationships[] <- lapply(
+    NCIt_relationships,
+    as.character
+)
+
+names(NCIt_relationships) <- c("subject_code", "predicate_code", "object_code")
+
+```
+
+```{r save results to database}
+## define desired path to database
+nciTools_cache = getOption("nciTools.cache", tools::R_user_dir("nciTools", which = "cache"))
+db_filepath <- file.path(nciTools_cache, "NCIt.sqlite")
+
+NCIt_sqlite_con = DBI::dbConnect(drv=RSQLite::SQLite(), db_filepath)
+
+## write tables to DB
+DBI::dbWriteTable(conn = NCIt_sqlite_con,name = "NCIt_entities", NCIt_entities, overwrite=TRUE)
+DBI::dbWriteTable(conn = NCIt_sqlite_con,name = "NCIt_semantic_types", NCIt_semantic_types, overwrite=TRUE)
+DBI::dbWriteTable(conn = NCIt_sqlite_con,name = "NCIt_parents", NCIt_parents, overwrite=TRUE)
+DBI::dbWriteTable(conn = NCIt_sqlite_con,name = "NCIt_synonyms", NCIt_synonyms, overwrite=TRUE)
+DBI::dbWriteTable(conn = NCIt_sqlite_con,name = "NCIt_relationship_types", NCIt_relationship_types, overwrite=TRUE)
+DBI::dbWriteTable(conn = NCIt_sqlite_con,name = "NCIt_relationships", NCIt_relationships, overwrite=TRUE)
+
+
+```
+
+```{r example queries}
+
+## get ancestors e.g. for Solid Neoplasm
+solid_neoplasm_code = "C9292"
+get_ancestors_query <- 'WITH RECURSIVE ancestors AS 
+    (SELECT code AS a, 0 AS distance
+    FROM NCIt_parents
+    WHERE code IN ($1)
+    UNION ALL
+    SELECT NCIt_parents.parents, ancestors.distance + 1
+    FROM ancestors
+    JOIN NCIt_parents ON ancestors.a = NCIt_parents.code)   
+SELECT DISTINCT ent.code, ent.PT, anc.distance  FROM ancestors anc INNER JOIN NCIt_entities ent ON ent.code = anc.a ORDER BY anc.distance;' 
+
+DBI::dbGetQuery(NCIt_sqlite_con, statement = get_ancestors_query, params = list(solid_neoplasm_code)) |> 
+  formattable::formattable()
+
+## get descendants
+get_descendants_query = 'WITH RECURSIVE children AS 
+        (SELECT code AS c, 0 AS distance
+        FROM NCIt_parents
+        WHERE code IN ($1)
+        UNION ALL
+        SELECT p.code, ch.distance + 1
+        FROM children ch
+        JOIN NCIt_parents p ON ch.c = p.parents)
+    SELECT DISTINCT ent.code, ent.PT, ch.distance
+    FROM children ch
+    LEFT JOIN NCIt_entities ent ON ch.c = ent.code
+    ORDER BY ch.distance;'
+
+DBI::dbGetQuery(NCIt_sqlite_con, statement = get_descendants_query, params = list(solid_neoplasm_code)) |> 
+  head() |> 
+  formattable::formattable()
+
+
+## get drug targets
+drug_names = c('Sotorasib', 'Pembrolizumab', 'Bevacizumab', 'Alpelisib', 'PI3Kdelta/gamma Inhibitor ZX-101A')
+get_targets_query = 'SELECT ne.code, ne.PT, ne.definition, nrt.label, nr.object_code, ne2.PT AS object_PT 
+FROM NCIt_entities ne
+INNER JOIN NCIt_relationships nr ON ne.code = nr.subject_code
+INNER JOIN NCIt_relationship_types nrt ON nr.predicate_code = nrt.code
+INNER JOIN NCIt_entities ne2 ON nr.object_code = ne2.code
+WHERE ne.PT IN ($1) AND nrt.label = "Has_Target"'
+DBI::dbGetQuery(NCIt_sqlite_con, statement = get_targets_query, params = list(drug_names)) |> 
+  formattable::formattable()
+
+
+
+## get cell/molecular dysfunctions for given gene(s)
+gene_names = c('KRAS')
+relationship_labels = c('Gene_Product_Variant_Of_Gene_Product', 'Molecular_Abnormality_Involves_Gene')
+get_molecular_dysfunctions_query = 'SELECT ns.code, ns.synonyms, nrt.label AS relationship, nr.subject_code AS variant_code, ne.PT AS variant_PT 
+FROM NCIt_synonyms ns
+INNER JOIN NCIt_semantic_types nst ON nst.code = ns.code
+INNER JOIN NCIt_relationships nr ON nr.object_code = ns.code
+INNER JOIN NCIt_relationship_types nrt ON nrt.code = nr.predicate_code
+INNER JOIN NCIt_entities ne ON nr.subject_code = ne.code
+WHERE ns.synonyms IN ($1)'
+DBI::dbGetQuery(NCIt_sqlite_con, statement = get_molecular_dysfunctions_query, params = list(gene_names)) |> 
+  dplyr::filter(relationship %in% relationship_labels) |> 
+  formattable::formattable()
+
+```
+
+```{r disconnect from database}
+
+## disconnect
+DBI::dbDisconnect(NCIt_sqlite_con)
+
 
 ```
 
 ```{r database, eval=TRUE}
-reticulate::source_python(
-  system.file("python", "create_db_from_graph.py", package = "nciTools")
-)
-
-
-
-create_db_from_graph(g, db_file)
+# reticulate::source_python(
+#   system.file("python", "create_db_from_graph.py", package = "nciTools")
+# )
+# 
+# create_db_from_graph(g, db_file)
 ```
-
-
 
 ```{r test queries against DB}
 
-NCIt_sqlite_con = DBI::dbConnect(drv=RSQLite::SQLite(), db_file)
-
-## concepts
-DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM concept LIMIT 6')
-
-## relationships
-DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship LIMIT 6')
-
-## relationship types
-DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship_type LIMIT 6') 
-
-## relationship labels
-DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship_type') |> 
-  dplyr::pull(label) |> 
-  unique()
-
-## outgoing relationships
-DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT c.*, r.*, rt.label FROM concept c  INNER JOIN relationship r ON c.code = r.subject_code LEFT JOIN relationship_type rt ON r.predicate_code = rt.code WHERE c.code ="C98365"')
-
-## incoming relationships
-DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT c.*, r.*, rt.label FROM concept c  INNER JOIN relationship r ON c.code = r.object_code LEFT JOIN relationship_type rt ON r.predicate_code = rt.code WHERE c.code ="C98365"')
+# 
+# 
+# ## concepts
+# DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM concept LIMIT 6')
+# 
+# ## relationships
+# DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship LIMIT 6')
+# 
+# ## relationship types
+# DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship_type LIMIT 6') 
+# 
+# ## relationship labels
+# DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT * FROM relationship_type') |> 
+#   dplyr::pull(label) |> 
+#   unique()
+# 
+# ## outgoing relationships
+# DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT c.*, r.*, rt.label FROM concept c  INNER JOIN relationship r ON c.code = r.subject_code LEFT JOIN relationship_type rt ON r.predicate_code = rt.code WHERE c.code ="C98365"')
+# 
+# ## incoming relationships
+# DBI::dbGetQuery(conn = NCIt_sqlite_con, statement = 'SELECT c.*, r.*, rt.label FROM concept c  INNER JOIN relationship r ON c.code = r.object_code LEFT JOIN relationship_type rt ON r.predicate_code = rt.code WHERE c.code ="C98365"')
 
 ```
 

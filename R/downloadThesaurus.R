@@ -42,25 +42,6 @@ downloadThesaurus = function() {
   # 6. Clean up immediately (zip + extracted files)
   unlink(c(zip_file, unzip_dir), recursive = TRUE, force = TRUE)
 
-  ## download to data/raw subfolder
-  # destFlatFilename <- paste(exdir, "NCIt_FLAT.zip", sep = "/")
-
-  ## try to download
-  # tryCatch(
-  #   expr = {
-  #     utils::download.file(url=NCItURL,destfile = destFlatFilename)
-  #     utils::unzip(zipfile = destFlatFilename, exdir = exdir,)
-  #     ## clean up, remove files
-  #     file.remove(destFlatFilename)
-  #   }, error = function(e) {
-  #     print("NCIt download failed")
-  #   }
-  # )
-
-  ## output file targets create files and return their paths
-  # ex_filepath = paste(exdir, "Thesaurus.txt", sep = "/")
-  # return(ex_filepath)
-
   names(NCIt_raw)[1:8] <- c("code", "concept_IRI", "parents", "synonyms", "definition", "display_name", "concept_status", "semantic_type")
 
   return(NCIt_raw)
